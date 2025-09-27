@@ -1,31 +1,29 @@
-// server.js
-
 const express = require('express');
 const app = express();
 
-// ✅ Always use Railway's injected port
+// ✅ Use Railway's injected port, fallback to 3000 for local dev
 const PORT = process.env.PORT || 3000;
 
 if (!process.env.PORT) {
-  console.warn('⚠️ PORT not set — falling back to 3000');
+  console.warn('⚠️ No Railway PORT detected — running locally on 3000');
 }
 
-// Middleware to parse JSON
+// ✅ Middleware to parse JSON bodies
 app.use(express.json());
 
-// Root route
+// ✅ Root route for health check
 app.get('/', (req, res) => {
-  res.send('✅ GemAssure API is live and working!');
+  res.send('✅ GemAssure backend is live and reachable.');
 });
 
-// Stub route
+// ✅ Stub for GemGuide API connection (future expansion)
 app.get('/api/gemguide', (req, res) => {
   res.status(501).json({
-    message: '🔧 This endpoint will soon connect to the GemGuide API.',
+    message: '🔧 This endpoint will connect to the GemGuide API soon.',
   });
 });
 
-// Start server
+// ✅ Start the server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 GemAssure backend is running on port ${PORT}`);
 });
