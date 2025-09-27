@@ -1,10 +1,16 @@
+// server.js
+
 const express = require('express');
 const app = express();
 
-// ✅ Use Railway-injected port OR fallback to 3000 explicitly
+// ✅ Always use Railway's injected port
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+if (!process.env.PORT) {
+  console.warn('⚠️ PORT not set — falling back to 3000');
+}
+
+// Middleware to parse JSON
 app.use(express.json());
 
 // Root route
@@ -12,7 +18,7 @@ app.get('/', (req, res) => {
   res.send('✅ GemAssure API is live and working!');
 });
 
-// Stub endpoint
+// Stub route
 app.get('/api/gemguide', (req, res) => {
   res.status(501).json({
     message: '🔧 This endpoint will soon connect to the GemGuide API.',
