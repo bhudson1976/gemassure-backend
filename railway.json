@@ -3,6 +3,7 @@
     "env": {}
   },
   "deploy": {
-    "startCommand": "node app.js"
+    "startCommand": "node server.js"
   }
 }
+
