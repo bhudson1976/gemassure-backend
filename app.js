@@ -1,16 +1,10 @@
-// app.js
-
 const express = require('express');
 const app = express();
 
-// ✅ Always use Railway's injected port without fallback
-const PORT = process.env.PORT;
+// ✅ Use Railway-injected port OR fallback to 3000 explicitly
+const PORT = process.env.PORT || 3000;
 
-if (!PORT) {
-  throw new Error('❌ Missing PORT environment variable — Railway needs this!');
-}
-
-// Middleware to parse JSON
+// Middleware
 app.use(express.json());
 
 // Root route
@@ -18,7 +12,7 @@ app.get('/', (req, res) => {
   res.send('✅ GemAssure API is live and working!');
 });
 
-// Stub route
+// Stub endpoint
 app.get('/api/gemguide', (req, res) => {
   res.status(501).json({
     message: '🔧 This endpoint will soon connect to the GemGuide API.',
