@@ -17,7 +17,7 @@ app.get('/api/gemguide', (req, res) => {
   res.status(501).json({ message: '🔧 This endpoint will soon connect to the GemGuide API.' });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+// Start server (listen on all interfaces)
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
