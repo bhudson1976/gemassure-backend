@@ -11,9 +11,18 @@ if (!process.env.PORT) {
 // ✅ Middleware to parse JSON bodies
 app.use(express.json());
 
-// ✅ Root route for health check
+// ✅ Root route
 app.get('/', (req, res) => {
   res.send('✅ GemAssure backend is live and reachable.');
+});
+
+// ✅ Health check route to verify API key is present
+app.get('/healthz', (req, res) => {
+  const keyPresent = !!process.env.GEMGUIDE_API_KEY;
+  res.json({
+    status: 'ok',
+    hasApiKey: keyPresent
+  });
 });
 
 // ✅ Stub for GemGuide API connection (future expansion)
