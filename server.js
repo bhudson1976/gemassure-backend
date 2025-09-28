@@ -1,13 +1,13 @@
 const express = require('express');
 const app = express();
-require('dotenv').config();
+
+// ✅ Don't load dotenv in production — Railway injects vars directly
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 
 // ✅ Use Railway's injected port, fallback to 3000 for local dev
 const PORT = process.env.PORT || 3000;
-
-if (!process.env.PORT) {
-  console.warn('⚠️ No Railway PORT detected — running locally on 3000');
-}
 
 // ✅ Middleware to parse JSON bodies
 app.use(express.json());
@@ -31,7 +31,7 @@ app.get('/healthz', (req, res) => {
   });
 });
 
-// ✅ Stub for GemGuide API connection (future expansion)
+// ✅ Stub for GemGuide API connection
 app.get('/api/gemguide', (req, res) => {
   res.status(501).json({
     message: '🔧 This endpoint will connect to the GemGuide API soon.',
