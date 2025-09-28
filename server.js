@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+require('dotenv').config();
 
 // ✅ Use Railway's injected port, fallback to 3000 for local dev
 const PORT = process.env.PORT || 3000;
