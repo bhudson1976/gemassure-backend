@@ -17,9 +17,14 @@ app.get('/', (req, res) => {
   res.send('✅ GemAssure backend is live and reachable.');
 });
 
-// ✅ Health check route to verify API key is present
+// ✅ Health check route with console logging
 app.get('/healthz', (req, res) => {
-  const keyPresent = !!process.env.GEMGUIDE_API_KEY;
+  const rawKey = process.env.GEMGUIDE_API_KEY;
+  const keyPresent = !!rawKey;
+
+  // 🔍 Log what we see
+  console.log('🔎 GEMGUIDE_API_KEY:', rawKey || '[MISSING]');
+
   res.json({
     status: 'ok',
     hasApiKey: keyPresent
