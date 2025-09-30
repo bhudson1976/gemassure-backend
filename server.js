@@ -48,62 +48,89 @@ app.get('/', (req, res) => {
   res.send('✅ GemAssure backend is live.');
 });
 
-// Main estimate route (GemGuide)
+// Main estimate route
 app.post('/api/estimate', async (req, res) => {
-  const { gemType, carat, cut, color, clarity } = req.body;
+  const { gemType, carat, cut, color, clarity, metalType, metalWeight } = req.body;
   console.log('[POST] /api/estimate', req.body);
 
   try {
     let url = '';
     let type = '';
 
-    if (gemType.toLowerCase() === 'diamond') {
+    if (gemType && gemType.toLowerCase() === 'diamond') {
       type = 'diamond';
       url = `${process.env.GEMGUIDE_BASE_URL}/diamond?name=${encodeURIComponent(
         cut
       )}&weight=${carat}&color=${color}&clarity=${clarity}`;
-    } else {
+    } else if (gemType) {
       type = 'gem';
       url = `${process.env.GEMGUIDE_BASE_URL}/gem?name=${encodeURIComponent(
         gemType
       )}&weight=${carat}`;
     }
 
-    const ggResp = await axios.get(url, {
-      headers: {
-        api_key: process.env.GEMGUIDE_API_KEY,
-        user: process.env.GEMGUIDE_USERNAME,
-      },
-    });
+    let ggResp = null;
+    if (url) {
+      ggResp = await axios.get(url, {
+        headers: {
+          api_key: process.env.GEMGUIDE_API_KEY,
+          user: process.env.GEMGUIDE_USERNAME,
+        },
+      });
+    }
 
+    // Parse GemGuide response
     let estimatedValue = null;
     let range = null;
-
-    if (type === 'diamond') {
-      const table = ggResp.data;
-      estimatedValue = table?.[1]?.[1] || null;
-      const low = table?.[1]?.[2] || null;
-      const high = table?.[1]?.[0] !== '-' ? table?.[1]?.[0] : null;
-      if (low || high) range = [low, high].filter((v) => v !== null);
-    } else {
-      const prices = ggResp.data?.['5'];
-      if (Array.isArray(prices)) {
-        if (prices.length === 2) {
-          estimatedValue = (prices[0] + prices[1]) / 2;
-          range = prices;
-        } else {
-          estimatedValue = prices[0] || null;
+    if (ggResp) {
+      if (type === 'diamond') {
+        const table = ggResp.data;
+        estimatedValue = table?.[1]?.[1] || null;
+        const low = table?.[1]?.[2] || null;
+        const high = table?.[1]?.[0] !== '-' ? table?.[1]?.[0] : null;
+        if (low || high) range = [low, high].filter((v) => v !== null);
+      } else {
+        const prices = ggResp.data?.['5'];
+        if (Array.isArray(prices)) {
+          if (prices.length === 2) {
+            estimatedValue = (prices[0] + prices[1]) / 2;
+            range = prices;
+          } else {
+            estimatedValue = prices[0] || null;
+          }
         }
       }
     }
+
+    // Metals API
+    let metalValue = null;
+    if (metalType && metalWeight) {
+      try {
+        const metalResp = await axios.get(
+          `${process.env.METALPRICE_BASE_URL}/latest?apikey=${process.env.METALPRICE_API_KEY}&base=USD&currencies=${metalType}`
+        );
+        const rate = metalResp.data?.rates?.[metalType];
+        if (rate) {
+          metalValue = rate * metalWeight;
+        }
+      } catch (err) {
+        console.error("❌ Metals API error:", err.message);
+      }
+    }
+
+    const totalValue = (estimatedValue || 0) + (metalValue || 0);
 
     const responseData = {
       ok: true,
       type,
       input: req.body,
       estimatedValue,
+      metalValue,
+      totalValue,
       range,
-      raw: ggResp.data,
+      raw: {
+        gem: ggResp?.data,
+      },
     };
 
     logRequestResponse({
@@ -131,24 +158,6 @@ app.post('/api/estimate', async (req, res) => {
     });
 
     res.status(400).json(errorData);
-  }
-});
-
-// Metals API test route
-app.get('/api/metal-price', async (req, res) => {
-  try {
-    const response = await axios.get('https://api.metalpriceapi.com/v1/latest', {
-      params: {
-        api_key: process.env.METALPRICE_API_KEY,
-        base: 'USD',
-        currencies: 'XAU,XAG' // Gold, Silver
-      }
-    });
-
-    res.json(response.data);
-  } catch (error) {
-    console.error('❌ Metals API test failed:', error.message);
-    res.status(500).json({ error: 'Failed to fetch metals price' });
   }
 });
 
