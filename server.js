@@ -161,6 +161,17 @@ app.post('/api/estimate', async (req, res) => {
   }
 });
 
+// Debug route to confirm env vars (remove later!)
+app.get('/debug-env', (req, res) => {
+  res.json({
+    GEMGUIDE_BASE_URL: process.env.GEMGUIDE_BASE_URL,
+    GEMGUIDE_USERNAME: process.env.GEMGUIDE_USERNAME,
+    GEMGUIDE_API_KEY: process.env.GEMGUIDE_API_KEY ? '✅ set' : '❌ missing',
+    METALPRICE_BASE_URL: process.env.METALPRICE_BASE_URL,
+    METALPRICE_API_KEY: process.env.METALPRICE_API_KEY ? '✅ set' : '❌ missing',
+  });
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 GemAssure backend is running on port ${PORT}`);
